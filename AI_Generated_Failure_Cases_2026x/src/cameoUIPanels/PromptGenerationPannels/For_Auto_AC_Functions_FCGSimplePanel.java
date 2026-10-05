@@ -22,6 +22,7 @@ import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -60,6 +61,7 @@ import elementDataExtraction.PropertiesFunction;
 import requestCreation.PropmptCreator;
 import requestCreation.RequestSender;
 import responseCollection.ResponseCollector;
+import restAPI.BlabladorAPIJava;
 import restAPI.DLROllamaAPI;
 
 /**
@@ -77,27 +79,28 @@ public class For_Auto_AC_Functions_FCGSimplePanel extends JPanel {
 	Element selectedfunction;
 	Element selectedfunctionAction;
 
-    private String ModelName = "";
+	private String ModelName = "";
 
-    DLROllamaAPI DLRO;
+	DLROllamaAPI DLRO;
 	Map<String, List<Element>> propertyMap= new HashMap<String, List<Element>>();
-    // Key Management
-    private InternalDataRetreiver apiKeyManager;
+	// Key Management
+	private InternalDataRetreiver apiKeyManager;
 
-	JCheckBox chckbx_API_key;
+//	JCheckBox chckbx_API_key;
 	JToggleButton View_btn_API;
 	JPanel Key_panel;
 	JPanel L_panel;
 	String functionName; 
+	JComboBox<String> providerDropdown;
 
 	static IdGenerator IDG = new IdGenerator();
 
 	String SYS_MSG_FILE_NAME = "Sys_MSG_AC_Functions.txt";
 	String Sys_MSG_AC = "";
-//	Frame parent = MDDialogParentProvider.getProvider().getDialogParent(true);
+	//	Frame parent = MDDialogParentProvider.getProvider().getDialogParent(true);
 
 	Frame parent = new OSIRISFrame();
-	
+
 	ElementDataProcessor EDP = new ElementDataProcessor();
 
 	NameDerivator ND = new NameDerivator();
@@ -112,8 +115,8 @@ public class For_Auto_AC_Functions_FCGSimplePanel extends JPanel {
 	 */
 	public For_Auto_AC_Functions_FCGSimplePanel(Element selectedNode) {
 		setPreferredSize(new Dimension(780, 730));
-        apiKeyManager = new InternalDataRetreiver(this);
-        DLRO = new DLROllamaAPI(); // Assuming DLROllamaAPI has a default constructor
+		apiKeyManager = new InternalDataRetreiver(this);
+		DLRO = new DLROllamaAPI(); // Assuming DLROllamaAPI has a default constructor
 
 		var splitpannel = new FCGSimpleSubPannel();
 		var functionProperties = new PropertiesFunction();
@@ -174,6 +177,7 @@ public class For_Auto_AC_Functions_FCGSimplePanel extends JPanel {
 		for (String n : IDList) {
 			ID.append(n);
 		}
+		 providerDropdown = new JComboBox<>(new String[]{"Local", "Ollama (DLR Server)", "Helmholtz Blablador"});
 
 		L_panel = new JPanel();
 		L_panel.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
@@ -394,7 +398,7 @@ public class For_Auto_AC_Functions_FCGSimplePanel extends JPanel {
 		JPanel panel_systems = new JPanel();
 		panel_systems.setBackground(Color.WHITE);
 
-		panel_systems = splitpannel.createPanelWithSystems(panel_systems, systemList);// comment this to check layout
+		//		panel_systems = splitpannel.createPanelWithSystems(panel_systems, systemList);                                              // comment this to check layout
 
 		GroupLayout gl_subpanel_2 = new GroupLayout(subpanel_2);
 		gl_subpanel_2.setHorizontalGroup(
@@ -476,10 +480,10 @@ public class For_Auto_AC_Functions_FCGSimplePanel extends JPanel {
 		List<String> LowerLevelFuncStringList=ND.getStringListForElements(LowerLevelList);
 
 		btn_GeneratePrompt.addActionListener(new ActionListener() {
-/**
- * @param e The `e` parameter represents an event object that encapsulates state information about an action event triggered by a user interaction.
- * @summary The `actionPerformed` method handles user actions to collect and process function-related data from various input fields and checkbox lists, updating property maps and generating a prompt string based on the collected information.
- */
+			/**
+			 * @param e The `e` parameter represents an event object that encapsulates state information about an action event triggered by a user interaction.
+			 * @summary The `actionPerformed` method handles user actions to collect and process function-related data from various input fields and checkbox lists, updating property maps and generating a prompt string based on the collected information.
+			 */
 			public void actionPerformed(ActionEvent e) {// Get selected items from each list
 
 				propertyMapUpdated = new HashMap<String, List<String>>();
@@ -490,7 +494,7 @@ public class For_Auto_AC_Functions_FCGSimplePanel extends JPanel {
 				if (ID == null || ID.trim().isEmpty()) {
 					ID = IDG.setID(functionName);
 					Func_ID_textField.setText(ID);
-					
+
 				}
 				List<String> FailureTypes = splitpannel.getSelectedItem(FT_checkBoxList,FTs);
 				List<String> Phases = splitpannel.getSelectedItem(Phases_checkBoxList,Phs);
@@ -511,7 +515,7 @@ public class For_Auto_AC_Functions_FCGSimplePanel extends JPanel {
 				Function.AddID(selectedfunction,ID);
 				Function.AddSystems(selectedfunction, Systems);
 				if(FailureTypes!=null && !FailureTypes.isEmpty())
-//						&& EDP.hasdefaultFT(FailureTypes)) 
+					//						&& EDP.hasdefaultFT(FailureTypes)) 
 				{
 					Function.AddFailuretypes(selectedfunction, FailureTypes);
 				}
@@ -608,19 +612,20 @@ public class For_Auto_AC_Functions_FCGSimplePanel extends JPanel {
 		Key_panel.setLayout(null);
 		JButton btn_sysmsg = new JButton("SYS MSG");
 		btn_sysmsg.addActionListener(new ActionListener() {
-/**
- * @param e The parameter `e` represents the event that triggered the method, containing details about the action performed.
- * @summary This method handles user actions by initializing the API key, loading system messages, and displaying a preview dialog.
- */
+			/**
+			 * @param e The parameter `e` represents the event that triggered the method, containing details about the action performed.
+			 * @summary This method handles user actions by initializing the API key, loading system messages, and displaying a preview dialog.
+			 */
 			public void actionPerformed(ActionEvent e) {
-                apiKeyManager.initializeAndLoadKey( SYS_MSG_FILE_NAME);
-                Sys_MSG_AC = apiKeyManager.SysMSGsys;
-                var dialog = new SystemMessagePreviewDialog(parent,
-                		Sys_MSG_AC,
-                        apiKeyManager.SYSMSGFilePath,
-                        apiKeyManager.targetDirPath);
-                dialog.setTitle("System Message to LLM");
-                dialog.setVisible(true);
+				String selectedProvider = (String) providerDropdown.getSelectedItem();
+				apiKeyManager.initializeAndLoadKey( SYS_MSG_FILE_NAME,selectedProvider);
+				Sys_MSG_AC = apiKeyManager.SysMSGsys;
+				var dialog = new SystemMessagePreviewDialog(parent,
+						Sys_MSG_AC,
+						apiKeyManager.SYSMSGFilePath,
+						apiKeyManager.targetDirPath);
+				dialog.setTitle("System Message to LLM");
+				dialog.setVisible(true);
 			}
 		});
 		btn_sysmsg.setBounds(302, 0, 89, 23);
@@ -640,81 +645,103 @@ public class For_Auto_AC_Functions_FCGSimplePanel extends JPanel {
 		View_btn_API.setBounds(0, 0, 64, 23);
 		Key_panel.add(View_btn_API);
 		View_btn_API.addActionListener(new ActionListener() {
-/**
- * @param e The `ActionEvent` parameter `e` represents the event that triggered this action.
- * @summary The `actionPerformed` method updates the visibility and editability of an API key field based on the selection state of a view button.
- */
+			/**
+			 * @param e The `ActionEvent` parameter `e` represents the event that triggered this action.
+			 * @summary The `actionPerformed` method updates the visibility and editability of an API key field based on the selection state of a view button.
+			 */
 			public void actionPerformed(ActionEvent e) {
-                if (View_btn_API.isSelected()) {
-                    API_key.setText(apiKeyManager.Ollamakey);
-                    API_key.setVisible(true);
-                    API_key.setEditable(true);
-                    View_btn_API.setText("Hide");
-                } else {
-                    API_key.setEditable(false);
-                    API_key.setVisible(false);
-                    View_btn_API.setText("Show");
-                }
+				if (View_btn_API.isSelected()) {
+					API_key.setText(apiKeyManager.currentApiKey);
+					API_key.setVisible(true);
+					API_key.setEditable(true);
+					View_btn_API.setText("Hide");
+				} else {
+					API_key.setEditable(false);
+					API_key.setVisible(false);
+					View_btn_API.setText("Show");
+				}
 			}
 		});
-        API_key.getDocument().addDocumentListener(new DocumentListener() {
-/**
- * @param e The `DocumentEvent e` parameter represents the event that signals a change in the document, specifically an insertion of text.
- * @summary The `insertUpdate` method is responsible for updating and saving an API key when text in the document is inserted or modified.
- */
-            @Override public void insertUpdate(DocumentEvent e) { apiKeyManager.updateAndSavePassword(API_key);}
-/**
- * @param e The `e` parameter represents a document event that occurs when text is removed from the document.
- * @summary The method `removeUpdate` is responsible for updating and saving an API key when an update event occurs.
- */
-            @Override public void removeUpdate(DocumentEvent e) { apiKeyManager.updateAndSavePassword(API_key);}
-/**
- * @param e The `e` parameter is a `DocumentEvent` object that represents changes made to a document's content.
- * @summary The `changedUpdate` method is responsible for handling changes in text data within a document event, typically to update or validate input fields dynamically based on user modifications.
- */
-            @Override public void changedUpdate(DocumentEvent e) {}
-        });
+		API_key.getDocument().addDocumentListener(new DocumentListener() {
+			/**
+			 * @param e The `DocumentEvent e` parameter represents the event that signals a change in the document, specifically an insertion of text.
+			 * @summary The `insertUpdate` method is responsible for updating and saving an API key when text in the document is inserted or modified.
+			 */
+			@Override public void insertUpdate(DocumentEvent e) { apiKeyManager.updateAndSavePassword(API_key);}
+			/**
+			 * @param e The `e` parameter represents a document event that occurs when text is removed from the document.
+			 * @summary The method `removeUpdate` is responsible for updating and saving an API key when an update event occurs.
+			 */
+			@Override public void removeUpdate(DocumentEvent e) { apiKeyManager.updateAndSavePassword(API_key);}
+			/**
+			 * @param e The `e` parameter is a `DocumentEvent` object that represents changes made to a document's content.
+			 * @summary The `changedUpdate` method is responsible for handling changes in text data within a document event, typically to update or validate input fields dynamically based on user modifications.
+			 */
+			@Override public void changedUpdate(DocumentEvent e) {}
+		});
 
-        API_key.addFocusListener(new java.awt.event.FocusAdapter() {
-/**
- * @param e The parameter `e` represents the event that indicates a component has lost input focus.
- * @summary The `focusLost` method is responsible for updating and saving the password when the API key field loses focus, provided that it is in an editable state.
- */
-            @Override
-            public void focusLost(java.awt.event.FocusEvent e) {
-                if (API_key.isEditable()) {
-                    apiKeyManager.updateAndSavePassword(API_key);
-                }
-            }
-        });
+		API_key.addFocusListener(new java.awt.event.FocusAdapter() {
+			/**
+			 * @param e The parameter `e` represents the event that indicates a component has lost input focus.
+			 * @summary The `focusLost` method is responsible for updating and saving the password when the API key field loses focus, provided that it is in an editable state.
+			 */
+			@Override
+			public void focusLost(java.awt.event.FocusEvent e) {
+				if (API_key.isEditable()) {
+					apiKeyManager.updateAndSavePassword(API_key);
+				}
+			}
+		});
 
 
-		chckbx_API_key = new JCheckBox("Use Ollama with API key");
-		chckbx_API_key.setBounds(12, 677, 153, 23);
-		chckbx_API_key.addItemListener(new ItemListener() {
-/**
- * @param e The `ItemEvent e` parameter represents the event object that describes the state change of an item, typically a checkbox.
- * @summary The `itemStateChanged` method toggles the visibility of a panel and manages checkbox state based on item selection.
- */
+		//		chckbx_API_key = new JCheckBox("Use Ollama with API key");
+		//		chckbx_API_key.setBounds(12, 677, 153, 23);
+
+
+		providerDropdown.setBounds(12, 677, 153, 23); 
+
+//		chckbx_API_key.addItemListener(new ItemListener() {
+//			/**
+//			 * @param e The `ItemEvent e` parameter represents the event object that describes the state change of an item, typically a checkbox.
+//			 * @summary The `itemStateChanged` method toggles the visibility of a panel and manages checkbox state based on item selection.
+//			 */
+//			public void itemStateChanged(ItemEvent e) {
+//				if (e.getStateChange() == ItemEvent.SELECTED) {
+//					Key_panel.setVisible(true);
+//					// Disable checkbox temporarily while async operation runs
+//					chckbx_API_key.setEnabled(false);
+//					// Use SwingWorker for blocking operations
+//					new KeySetupWorker().execute();
+//
+//
+//				} else {
+//					Key_panel.setVisible(false);
+//					//		            View_btn_API.setVisible(false);
+//					L_panel.revalidate();
+//					L_panel.repaint();
+//					// Always ensure re-enable just in case
+//					chckbx_API_key.setEnabled(true);
+//				}
+//				//				L_panel.revalidate();
+//				//				L_panel.repaint();
+//			}
+//		});
+
+		providerDropdown.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
 				if (e.getStateChange() == ItemEvent.SELECTED) {
-					Key_panel.setVisible(true);
-					// Disable checkbox temporarily while async operation runs
-					chckbx_API_key.setEnabled(false);
-					// Use SwingWorker for blocking operations
-					new KeySetupWorker().execute();
+					String selected = (String) e.getItem();
 
-
-				} else {
-					Key_panel.setVisible(false);
-//		            View_btn_API.setVisible(false);
-		            L_panel.revalidate();
-		            L_panel.repaint();
-		            // Always ensure re-enable just in case
-		            chckbx_API_key.setEnabled(true);
+					if ("Local".equals(selected)) {
+						Key_panel.setVisible(false);
+						if (L_panel != null) { L_panel.revalidate(); L_panel.repaint(); } // Use 'panel' for Prompt_preview_pannel
+					} else {
+						Key_panel.setVisible(true);
+						providerDropdown.setEnabled(false);
+						new KeySetupWorker().execute();
+					}
 				}
-//				L_panel.revalidate();
-//				L_panel.repaint();
+
 			}
 		});
 
@@ -722,84 +749,60 @@ public class For_Auto_AC_Functions_FCGSimplePanel extends JPanel {
 		JButton btn_SendPrompt = new JButton("Send Prompt");
 		btn_SendPrompt.setBounds(573, 679, 175, 21);
 		btn_SendPrompt.addActionListener(new ActionListener() {
-/**
- * @param e The parameter `e` of type `ActionEvent` in the method `actionPerformed` represents the event object that holds information about the action performed by a user, such as a button click.
- * @summary The `actionPerformed` method processes user input from a text area, executing a background task to generate and handle responses based on the selected options.
- */
+			/**
+			 * @param e The parameter `e` of type `ActionEvent` in the method `actionPerformed` represents the event object that holds information about the action performed by a user, such as a button click.
+			 * @summary The `actionPerformed` method processes user input from a text area, executing a background task to generate and handle responses based on the selected options.
+			 */
 			public void actionPerformed(ActionEvent e) {
 				String edited_prompt = textArea_prompt.getText();
 				// Create a SwingWorker to execute the task in the background
 				SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
-/**
- * @return The `doInBackground` method is designed to perform a long-running background task, specifically handling the generation of responses from an external API. The primary purpose of this method is to execute the response generation process asynchronously and manage any potential errors or exceptions that may arise during this operation.
+					/**
+					 * @return The `doInBackground` method is designed to perform a long-running background task, specifically handling the generation of responses from an external API. The primary purpose of this method is to execute the response generation process asynchronously and manage any potential errors or exceptions that may arise during this operation.
 
 The return value of this method is `Void`, which indicates that it does not produce any meaningful output directly. Instead, its role is to carry out the background task and handle the outcome internally by either generating a response or logging an error message if the API call fails.
 
 In summary, the return value of `Void` signifies that the primary objective of this method is to perform an asynchronous operation rather than to return a specific result.
- * @summary The `doInBackground` method executes a long-running background task to generate and process a response from an external server based on user selections, handling API key usage and measuring the time taken for the operation.
- */
+					 * @summary The `doInBackground` method executes a long-running background task to generate and process a response from an external server based on user selections, handling API key usage and measuring the time taken for the operation.
+					 */
 					@Override
 					protected Void doInBackground() throws Exception {  
-						// Capture the start time
-						//						var parent = MDDialogParentProvider.getProvider().getDialogParent(true);
+		                long startTime = System.currentTimeMillis();
+		                String response = "";
+		                
+		                String selectedProvider = (String) providerDropdown.getSelectedItem();
+		                boolean using_API_key = !"Local".equals(selectedProvider);
+		                
+		                String apiKey = apiKeyManager.currentApiKey;
+		                String sys_msg = apiKeyManager.SysMSGsys;
+		                
+		                // Note: Ensure RequestSender constructor is updated to accept 'selectedProvider' as the first argument
+		                RequestSender Rs = new RequestSender(selectedProvider, using_API_key, apiKey, sys_msg, ModelName);
 
-						boolean using_API_key;
-						if (chckbx_API_key.isSelected()) {
-							using_API_key=true;
-						}else {
-							using_API_key=false;
-						}
-						long startTime = System.currentTimeMillis();
-						String response ="";//
-						String ollama_key = apiKeyManager.Ollamakey;
-						RequestSender Rs = new RequestSender(using_API_key,ollama_key,Sys_MSG_AC,ModelName);
+		                if (WithRAG.isSelected()) {				
+		                    response = Rs.generateResponse_With_RAG(edited_prompt, promptpropertyMap);
+		                } else if (WORAG.isSelected()) {
+		                    response = Rs.generateResponse_Without_RAG(edited_prompt, promptpropertyMap);							
+		                } else {
+		                    response = Rs.generateResponse_Without_RAG(edited_prompt, promptpropertyMap);				
+		                }
 
-						if(WithRAG.isSelected()) {
-							// Background task (the long-running operation)					
-							response =Rs.generateResponse_With_RAG(edited_prompt, promptpropertyMap);
-						}else if (WORAG.isSelected()) {
-							response =Rs.generateResponse_Without_RAG(edited_prompt, promptpropertyMap);							
-						}else {
-							response =Rs.generateResponse_Without_RAG(edited_prompt, promptpropertyMap);				
-						}
+		                if (response.contains("Failed with status code ") ||
+		                        response.contains("Failed to connect to the server.")) {
+		                    return null;
+		                }
 
-						if(response.contains("Failed with status code ") ||
-								response.contains("Failed to connect to the server. Please check if the server is running.")) {
-							return null;
-						}
+		                long endTime = System.currentTimeMillis();
+		                long elapsedTime = endTime - startTime;
+		                
+		                long hours = TimeUnit.MILLISECONDS.toHours(elapsedTime);
+		                long minutes = TimeUnit.MILLISECONDS.toMinutes(elapsedTime) % 60;
+		                long seconds = TimeUnit.MILLISECONDS.toSeconds(elapsedTime) % 60;
 
-						// Calculate elapsed time
-						long endTime = System.currentTimeMillis();
-						long elapsedTime = endTime - startTime;
-						// Convert milliseconds to hours, minutes, and seconds
-						long hours = TimeUnit.MILLISECONDS.toHours(elapsedTime);
-						long minutes = TimeUnit.MILLISECONDS.toMinutes(elapsedTime) % 60;
-						long seconds = TimeUnit.MILLISECONDS.toSeconds(elapsedTime) % 60;
+		                String timeTaken = String.format("Time taken: %02d hours %02d minutes %02d seconds", hours, minutes, seconds);
 
-						String timeTaken = String.format("Time taken: %02d hours %02d minutes %02d seconds", hours, minutes, seconds);
-
-						ResponseCollector.parseResponse(response,timeTaken,promptpropertyMap,propertyMapUpdated, selectedfunction);
-
-						//						// Parse and display response based on content
-						//						Main_ResponseParser_For_AC_Functions parser = new Main_ResponseParser_For_AC_Functions();
-						//						var formattedResponse = parser.parseFCResponse(response);
-						//
-						//
-						//						//						Application.getInstance().getGUILog().showMessage("Response is parsed:"+ formattedResponse.toString());
-						//
-						//						if (!formattedResponse.isEmpty()) {
-						//							//							Application.getInstance().getGUILog().showMessage("FCGResponseDialog3 will be created.");
-						//							var dialog = new For_AC_Functions_AutoFCGResponseDialog(parent, formattedResponse, propertyMapUpdated, selectedfunction);
-						//							dialog.setTitle("Response Received - " + timeTaken);
-						//							dialog.setVisible(true);
-						//							//							Application.getInstance().getGUILog().showMessage("FCGResponseDialog3  created.");
-						//						} else {
-						//							//							Application.getInstance().getGUILog().showMessage("ManualFCGResponseDialog3 will be created.");
-						//							var dialog = new For_AC_Functions_ManualFCGResponseDialog(parent, response, propertyMapUpdated, selectedfunction);
-						//							dialog.setTitle("Response Received - " + timeTaken);
-						//							dialog.setVisible(true);
-						//							//							Application.getInstance().getGUILog().showMessage("ManualFCGResponseDialog3  created.");
-						//						}
+		                // Note: Ensure ResponseCollector references the correct property maps
+		                ResponseCollector.parseResponse(response, timeTaken, promptpropertyMap, propertyMapUpdated, selectedfunction);
 
 						return null;
 					}
@@ -838,8 +841,9 @@ In summary, the return value of `Void` signifies that the primary objective of t
 		ExtraInfoPannel_1.add(chckbxUpperLevelFunctions_1);
 		ExtraInfoPannel_1.add(chckbxLowerLevelFunctions_1);
 		ExtraInfoPannel_1.add(lblNewLabel_1);
-		L_panel.add(chckbx_API_key);
+//		L_panel.add(chckbx_API_key);
 
+		L_panel.add(providerDropdown);
 		L_panel.add(Key_panel);
 
 
@@ -861,83 +865,84 @@ In summary, the return value of `Void` signifies that the primary objective of t
 	private class KeySetupWorker extends SwingWorker<Void, Void> {
 		private boolean setupSuccessful = false;
 
-/**
- * @return The return value for the `doInBackground` method is `Void`, indicating that this method does not produce a meaningful result. Its purpose is to initialize an API key manager and validate certain paths in the background, without returning any data to the caller.
- * @summary The `doInBackground` method initializes and loads the API key, then validates necessary file paths in the background.
- */
-/**
- * @author kata_du
- * @version 1.0.0
- * @date 2025-12-18
- * @summary The `KeySetupWorker` class is responsible for setting up key operations asynchronously, with the `doInBackground()` method performing background tasks and the `done()` method handling completion of these tasks.
- */
+		/**
+		 * @return The return value for the `doInBackground` method is `Void`, indicating that this method does not produce a meaningful result. Its purpose is to initialize an API key manager and validate certain paths in the background, without returning any data to the caller.
+		 * @summary The `doInBackground` method initializes and loads the API key, then validates necessary file paths in the background.
+		 */
+		/**
+		 * @author kata_du
+		 * @version 1.0.0
+		 * @date 2025-12-18
+		 * @summary The `KeySetupWorker` class is responsible for setting up key operations asynchronously, with the `doInBackground()` method performing background tasks and the `done()` method handling completion of these tasks.
+		 */
 		@Override
 		protected Void doInBackground() throws Exception {
 			// This runs in a background 
-/**
- * @return The `doInBackground` method returns a `Void`, which signifies that it does not produce any meaningful result. The primary purpose of this method is to perform background operations essential for initializing the API key manager and validating certain paths, as indicated by its internal logic.
- * @summary The primary responsibility of the `doInBackground` method is to initialize and load an API key from a specified file, then check if certain paths are valid after this initialization process.
- */
-            apiKeyManager.initializeAndLoadKey(SYS_MSG_FILE_NAME);
+			/**
+			 * @return The `doInBackground` method returns a `Void`, which signifies that it does not produce any meaningful result. The primary purpose of this method is to perform background operations essential for initializing the API key manager and validating certain paths, as indicated by its internal logic.
+			 * @summary The primary responsibility of the `doInBackground` method is to initialize and load an API key from a specified file, then check if certain paths are valid after this initialization process.
+			 */
+			String selectedProvider = (String) providerDropdown.getSelectedItem(); // Fetch the dropdown value
+			apiKeyManager.initializeAndLoadKey(SYS_MSG_FILE_NAME, selectedProvider);
 
-			// Check if paths are valid after initializeAndLoadKey()
-			setupSuccessful = (apiKeyManager.targetDirPath != null && apiKeyManager.OllamaKeyFilePath != null);
+			setupSuccessful = (apiKeyManager.targetDirPath != null && apiKeyManager.ApiKeyFilePath != null);
 			return null;
 		}
 
-/**
- * @summary The `done` method processes the completion of an asynchronous task, handling any exceptions that occurred during its execution and updating the UI components accordingly.
- */
-/**
- * @summary The `done` method handles the completion of an asynchronous task by managing UI updates based on the result, displaying error messages if exceptions occur, and ensuring the proper state of components.
- */
+		/**
+		 * @summary The `done` method processes the completion of an asynchronous task, handling any exceptions that occurred during its execution and updating the UI components accordingly.
+		 */
+		/**
+		 * @summary The `done` method handles the completion of an asynchronous task by managing UI updates based on the result, displaying error messages if exceptions occur, and ensuring the proper state of components.
+		 */
 		@Override
 		protected void done() {
-			// This runs back on the EDT
 			try {
-				get(); // Retrieve result (or rethrow exceptions)
+				get(); 
 			} catch (InterruptedException | ExecutionException ex) {
-				Application.getInstance().getGUILog().showMessage("Error during key setup: " + ex.getMessage());
-				JOptionPane.showMessageDialog(For_Auto_AC_Functions_FCGSimplePanel.this,
+				JOptionPane.showMessageDialog(null,
 						"An error occurred during API key setup: " + ex.getMessage(),
 						"Setup Error", JOptionPane.ERROR_MESSAGE);
-				setupSuccessful = false; // Mark as failed if an exception occurred
+				setupSuccessful = false; 
 			} finally {
-				// Re-enable the checkbox
-				chckbx_API_key.setEnabled(true);
+				providerDropdown.setEnabled(true);
 
 				if (setupSuccessful) {
-					// Update UI based on loaded key
-					if (apiKeyManager.Ollamakey == null || apiKeyManager.Ollamakey.isEmpty()) {
+					if (apiKeyManager.currentApiKey == null || apiKeyManager.currentApiKey.isEmpty()) {
 						API_key.setEditable(true);
-						API_key.setVisible(true);;
-						API_key.setText(""); // Clear and allow input
-						View_btn_API.setSelected(true); // "Hide" mode to indicate input allowed
+						API_key.setVisible(true);
+						API_key.setText(""); 
+						View_btn_API.setSelected(true); 
 						View_btn_API.setText("Hide");
-						API_key.requestFocusInWindow(); // Give focus for immediate typing
+						API_key.requestFocusInWindow(); 
 					} else {
 						API_key.setEditable(false);
-						//                        API_key.setText("*****************"); // Mask the display
+						API_key.setVisible(false); // Can be removed if you want the field visible but masked
 						View_btn_API.setSelected(false);
 						View_btn_API.setText("View");
 
-	                    ModelName= DLRO.getModelName(apiKeyManager.Ollamakey);
+						String selectedProvider = (String) providerDropdown.getSelectedItem();
+
+						if ("Helmholtz Blablador".equals(selectedProvider)) {
+							BlabladorAPIJava blabladorAPI = new BlabladorAPIJava();
+							ModelName = blabladorAPI.getModelName(apiKeyManager.currentApiKey);
+						} else {
+							// Safe to call the DLR endpoint for Ollama (DLR Server)
+							ModelName = DLRO.getModelName(apiKeyManager.currentApiKey);
+						}
 					}
 				} else {
-					// If setup failed, ensure checkbox is unchecked and panel is hidden
-					chckbx_API_key.setSelected(false); // Force uncheck if setup failed
+					providerDropdown.setSelectedItem("Local");
 					Key_panel.setVisible(false);
-					//                    Ollama_key = "";
-					//                    API_key.setText("");
-
 				}
 
-				L_panel.revalidate();
-				L_panel.repaint();
+				// In Prompt_preview_pannel use: panel.revalidate(); panel.repaint();
+				if (L_panel != null) {
+					L_panel.revalidate();
+					L_panel.repaint();
+				}
 			}
 		}
 	}
-
-	
 }
 
