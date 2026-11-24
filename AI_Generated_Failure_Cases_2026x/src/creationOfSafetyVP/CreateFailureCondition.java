@@ -155,9 +155,12 @@ public class CreateFailureCondition {
  */
 	private String CreateFC(Element selectedNode, Map<String, List<String>> propertyMapUpdated) throws ReadOnlyElementException {
 	    // Search for Safety VP element
-	    var safetyVPElement = SafetyVP.SafetyVPSearch(selectedNode);
+		Element targetFunction = resolveFunctionElement(selectedNode);
+		// Search for Safety VP element
+	    var safetyVPElement = SafetyVP.SafetyVPSearch(targetFunction);
 
-	    var packageforFC = createFCPackage((Package) safetyVPElement, ((Class) selectedNode).getName());
+	    // Safely get the function name using NameDerivator instead of casting to (Class)
+	    var packageforFC = createFCPackage((Package) safetyVPElement, ND.getName(targetFunction));
 
 	    if (packageforFC != null) {
 	        var ownedFCs = packageforFC.getOwnedElement();
@@ -175,6 +178,16 @@ public class CreateFailureCondition {
 	        }
 	    }
 	    return "Problem encountered for : "+ FCid + " - " + FCName + "; \n" ;
+	}
+	
+	private Element resolveFunctionElement(Element selectedNode) {
+	    if (selectedNode instanceof CallBehaviorAction) {
+	        var behavior = ((CallBehaviorAction) selectedNode).getBehavior();
+	        if (behavior != null) {
+	            return (Element) behavior;
+	        }
+	    }
+	    return selectedNode;
 	}
 
 /**
@@ -265,8 +278,9 @@ public class CreateFailureCondition {
 	    StereotypesHelper.setStereotypePropertyValue(fcElement, fcStereotype, "Description", FCDescription);
 
 	    StereotypesHelper.setStereotypePropertyValue(fcElement, fcStereotype, "ID", FCid);
-
-	    StereotypesHelper.setStereotypePropertyValue(fcElement, fcStereotype, "Function", selectedNode);
+	    
+	    Element targetFunction = resolveFunctionElement(selectedNode);
+	    StereotypesHelper.setStereotypePropertyValue(fcElement, fcStereotype, "Function", targetFunction);
 
 	    StereotypesHelper.setStereotypePropertyValue(fcElement, fcStereotype, "Effect On Higher Level System", FCeffectHLS);
 

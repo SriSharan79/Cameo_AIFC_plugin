@@ -9,8 +9,8 @@ import customCameoActionConfigs.BrowserConfig;
 import customCameoActionConfigs.DiagramConfig;
 import customCameoActionConfigs.InsertAfterConfigurator;
 import customCameoActions.BA_For_Auto_FC_Prompt_Creator;
-import customCameoActions.BrowserActionForEmbedding;
 import customCameoActions.DA_For_Auto_FC_Prompt_Creator;
+import customCameoActions.TrailActionNew;
 
 
 /**
@@ -28,8 +28,8 @@ public class AIFCPlugin extends Plugin {
 	@Override
 
 	public void init() {
-		createEmbeddModelAction();
-//		createTrailBrowserAction();
+//		createEmbeddModelAction();
+		createTrailBrowserAction();
 		Auto_FC_Propmt_Wimdow();
 	}
 	
@@ -37,20 +37,20 @@ public class AIFCPlugin extends Plugin {
 /**
  * @summary The `createEmbeddModelAction` method creates a new embedding model action and configures it for use within the system.
  */
-	private void createEmbeddModelAction() {
-		var action = new BrowserActionForEmbedding("Embedd_Model1", "Embedd Model");
-		var browserConfiguration = new BrowserConfig(action);
-		ActionsConfiguratorsManager.getInstance().addContainmentBrowserContextConfigurator(browserConfiguration);
-	}
+//	private void createEmbeddModelAction() {
+//		var action = new BrowserActionForEmbedding("Embedd_Model1", "Embedd Model");
+//		var browserConfiguration = new BrowserConfig(action);
+//		ActionsConfiguratorsManager.getInstance().addContainmentBrowserContextConfigurator(browserConfiguration);
+//	}
 
 /**
  * @summary The `createTrailBrowserAction` method creates a new trail action, configures it for use in the containment browser, and adds it to the actions configurator manager.
  */
-//	private void createTrailBrowserAction() {
-//		var action = new TrailActionNew("Trail_names1", "Testing Action1");
-//		var browserConfiguration = new BrowserConfig(action);
-//		ActionsConfiguratorsManager.getInstance().addContainmentBrowserContextConfigurator(browserConfiguration);
-//	}
+	private void createTrailBrowserAction() {
+		var action = new TrailActionNew("Trail_names1", "Testing Action1");
+		var browserConfiguration = new BrowserConfig(action);
+		ActionsConfiguratorsManager.getInstance().addContainmentBrowserContextConfigurator(browserConfiguration);
+	}
 	
 
 /**

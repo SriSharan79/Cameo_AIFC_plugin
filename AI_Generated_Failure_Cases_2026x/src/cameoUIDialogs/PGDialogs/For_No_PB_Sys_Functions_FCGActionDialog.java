@@ -42,7 +42,11 @@ public class For_No_PB_Sys_Functions_FCGActionDialog extends JDialog {
 
 		this.pack();
 
-		this.setLocationRelativeTo(parent);
+		if (parent instanceof OSIRISFrame) {
+		    ((OSIRISFrame) parent).centerDialog(this);
+		} else {
+		    this.setLocationRelativeTo(parent);
+		}
 		this.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
 	}
 

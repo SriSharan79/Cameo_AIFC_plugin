@@ -105,7 +105,7 @@ public class For_AC_Functions_AutoResponsePannel extends JPanel {
 
         // Create the "Create Failure Conditions" button
         JButton btnCreate = new JButton("Create Failure Conditions");
-        btnCreate.addActionListener(e -> processFailureConditions(selectedNode));
+        btnCreate.addActionListener(e -> processFailureConditions(this.currentSelectedNode));
         
         JButton btnRaw_info = new JButton("Raw Data");
         btnRaw_info.addActionListener(new ActionListener() {
@@ -542,7 +542,7 @@ public class For_AC_Functions_AutoResponsePannel extends JPanel {
         
         var FHAtable = new CreateFHATable();
         try {
-        	creationMessage.append("\n").append(FHAtable.createTable_AC_Functions(selectedNode));
+        	creationMessage.append("\n").append(FHAtable.createTable(selectedNode));
 //			FHAtable.Createtable(selectedFunction);
 		} catch (ReadOnlyElementException e) {
 			// TODO Auto-generated catch block

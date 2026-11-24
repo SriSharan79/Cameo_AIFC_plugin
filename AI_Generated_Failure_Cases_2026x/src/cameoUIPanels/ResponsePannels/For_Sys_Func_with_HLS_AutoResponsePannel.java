@@ -106,7 +106,7 @@ public class For_Sys_Func_with_HLS_AutoResponsePannel extends JPanel {
 
         // Create the "Create Failure Conditions" button
         JButton btnCreate = new JButton("Create Failure Conditions");
-        btnCreate.addActionListener(e -> processFailureConditions(selectedNode));
+        btnCreate.addActionListener(e -> processFailureConditions(this.currentSelectedNode));
         
         // Use a final reference for 'response' within the anonymous class
         // This button's action listener will now directly use the `currentRawResponse` field,

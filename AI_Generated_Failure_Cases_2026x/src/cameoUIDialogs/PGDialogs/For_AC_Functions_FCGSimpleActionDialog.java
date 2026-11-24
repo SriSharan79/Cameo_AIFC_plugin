@@ -1,11 +1,12 @@
 package cameoUIDialogs.PGDialogs;
 
-import java.awt.Dimension;
+import java.awt.BorderLayout;
 import java.awt.Font;
 import java.awt.Frame;
 
 import javax.swing.JDialog;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.WindowConstants;
 
 import com.nomagic.uml2.ext.magicdraw.classes.mdkernel.Element;
@@ -33,20 +34,31 @@ public class For_AC_Functions_FCGSimpleActionDialog extends JDialog {
 	public For_AC_Functions_FCGSimpleActionDialog(Frame parent, Element selectedNode) {
 		super(parent, "Prompt Generation", false);
 
-		setPreferredSize(new Dimension(805, 780));
+		//setPreferredSize(new Dimension(805, 780));
+		setResizable(true); // Allow user and layout to resize dynamically
 
 		setFont(new Font("Dialog", Font.PLAIN, 12));
 
 		this.contentPanel2 = new For_Auto_AC_Functions_FCGSimplePanel(selectedNode);
-	    // Resize dialog to match the size of the content panel
+		// Wrap in a JScrollPane so if the panel expands or is opened on a smaller screen, nothing gets cut off
+        JScrollPane scrollPane = new JScrollPane(this.contentPanel2);
+        scrollPane.setBorder(null);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
 
-		this.setContentPane(contentPanel2);
+        this.getContentPane().setLayout(new BorderLayout());
+        this.getContentPane().add(scrollPane, BorderLayout.CENTER);
 
-		this.pack();
+        // Automatically sizes the dialog to fit For_Auto_AC_Functions_FCGSimplePanel's preferred size
+        this.pack();
 
-		this.setLocationRelativeTo(parent);
-		this.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
+        if (parent instanceof OSIRISFrame) {
+            ((OSIRISFrame) parent).centerDialog(this);
+        } else {
+            this.setLocationRelativeTo(parent);
+        }
+        this.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE); // Frees memory when closed
 	}
+
 
 
 

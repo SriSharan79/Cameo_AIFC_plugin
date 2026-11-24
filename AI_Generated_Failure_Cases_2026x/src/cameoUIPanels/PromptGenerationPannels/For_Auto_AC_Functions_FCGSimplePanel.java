@@ -86,12 +86,13 @@ public class For_Auto_AC_Functions_FCGSimplePanel extends JPanel {
 	// Key Management
 	private InternalDataRetreiver apiKeyManager;
 
-//	JCheckBox chckbx_API_key;
+	//	JCheckBox chckbx_API_key;
 	JToggleButton View_btn_API;
 	JPanel Key_panel;
 	JPanel L_panel;
 	String functionName; 
 	JComboBox<String> providerDropdown;
+	JComboBox<String> modelDropdown; // NEW: Inline model selector
 
 	static IdGenerator IDG = new IdGenerator();
 
@@ -114,7 +115,7 @@ public class For_Auto_AC_Functions_FCGSimplePanel extends JPanel {
 	 * @summary The `For_Auto_AC_Functions_FCGSimplePanel` method initializes and configures a GUI panel for performing functional hazard assessment on selected aircraft system functions.
 	 */
 	public For_Auto_AC_Functions_FCGSimplePanel(Element selectedNode) {
-		setPreferredSize(new Dimension(780, 730));
+		setPreferredSize(new Dimension(780, 760));
 		apiKeyManager = new InternalDataRetreiver(this);
 		DLRO = new DLROllamaAPI(); // Assuming DLROllamaAPI has a default constructor
 
@@ -177,7 +178,7 @@ public class For_Auto_AC_Functions_FCGSimplePanel extends JPanel {
 		for (String n : IDList) {
 			ID.append(n);
 		}
-		 providerDropdown = new JComboBox<>(new String[]{"Local", "Ollama (DLR Server)", "Helmholtz Blablador"});
+		providerDropdown = new JComboBox<>(new String[]{"Local", "Ollama (DLR Server)", "Helmholtz Blablador"});
 
 		L_panel = new JPanel();
 		L_panel.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
@@ -398,7 +399,7 @@ public class For_Auto_AC_Functions_FCGSimplePanel extends JPanel {
 		JPanel panel_systems = new JPanel();
 		panel_systems.setBackground(Color.WHITE);
 
-		//		panel_systems = splitpannel.createPanelWithSystems(panel_systems, systemList);                                              // comment this to check layout
+		panel_systems = splitpannel.createPanelWithSystems(panel_systems, systemList);                                              // comment this to check layout
 
 		GroupLayout gl_subpanel_2 = new GroupLayout(subpanel_2);
 		gl_subpanel_2.setHorizontalGroup(
@@ -608,7 +609,7 @@ public class For_Auto_AC_Functions_FCGSimplePanel extends JPanel {
 		RAG_panel.setLayout(gl_RAG_panel);
 
 		Key_panel = new JPanel();
-		Key_panel.setBounds(165, 677, 401, 23);
+		Key_panel.setBounds(12, 704, 736, 23);
 		Key_panel.setLayout(null);
 		JButton btn_sysmsg = new JButton("SYS MSG");
 		btn_sysmsg.addActionListener(new ActionListener() {
@@ -628,13 +629,13 @@ public class For_Auto_AC_Functions_FCGSimplePanel extends JPanel {
 				dialog.setVisible(true);
 			}
 		});
-		btn_sysmsg.setBounds(302, 0, 89, 23);
+		btn_sysmsg.setBounds(637, 0, 89, 23);
 		Key_panel.add(btn_sysmsg);
 
 		Key_panel.setVisible(false);
 
 		API_key = new JFormattedTextField();
-		API_key.setBounds(68, 1, 231, 20);
+		API_key.setBounds(68, 1, 566, 20);
 		API_key.setVisible(false);
 		Key_panel.add(API_key);
 		API_key.setBackground(new Color(255, 255, 255));
@@ -700,48 +701,68 @@ public class For_Auto_AC_Functions_FCGSimplePanel extends JPanel {
 
 		providerDropdown.setBounds(12, 677, 153, 23); 
 
-//		chckbx_API_key.addItemListener(new ItemListener() {
-//			/**
-//			 * @param e The `ItemEvent e` parameter represents the event object that describes the state change of an item, typically a checkbox.
-//			 * @summary The `itemStateChanged` method toggles the visibility of a panel and manages checkbox state based on item selection.
-//			 */
-//			public void itemStateChanged(ItemEvent e) {
-//				if (e.getStateChange() == ItemEvent.SELECTED) {
-//					Key_panel.setVisible(true);
-//					// Disable checkbox temporarily while async operation runs
-//					chckbx_API_key.setEnabled(false);
-//					// Use SwingWorker for blocking operations
-//					new KeySetupWorker().execute();
-//
-//
-//				} else {
-//					Key_panel.setVisible(false);
-//					//		            View_btn_API.setVisible(false);
-//					L_panel.revalidate();
-//					L_panel.repaint();
-//					// Always ensure re-enable just in case
-//					chckbx_API_key.setEnabled(true);
-//				}
-//				//				L_panel.revalidate();
-//				//				L_panel.repaint();
-//			}
-//		});
+		modelDropdown = new JComboBox<>();
+		modelDropdown.setBounds(175, 677, 353, 22);
+		modelDropdown.setVisible(false); // Hidden when "Local" is selected
+		modelDropdown.addItemListener(new ItemListener() {
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				if (e.getStateChange() == ItemEvent.SELECTED) {
+					ModelName = (String) e.getItem();
+				}
+			}
+		});
+		L_panel.add(modelDropdown);
+
+
+		//		chckbx_API_key.addItemListener(new ItemListener() {
+		//			/**
+		//			 * @param e The `ItemEvent e` parameter represents the event object that describes the state change of an item, typically a checkbox.
+		//			 * @summary The `itemStateChanged` method toggles the visibility of a panel and manages checkbox state based on item selection.
+		//			 */
+		//			public void itemStateChanged(ItemEvent e) {
+		//				if (e.getStateChange() == ItemEvent.SELECTED) {
+		//					Key_panel.setVisible(true);
+		//					// Disable checkbox temporarily while async operation runs
+		//					chckbx_API_key.setEnabled(false);
+		//					// Use SwingWorker for blocking operations
+		//					new KeySetupWorker().execute();
+		//
+		//
+		//				} else {
+		//					Key_panel.setVisible(false);
+		//					//		            View_btn_API.setVisible(false);
+		//					L_panel.revalidate();
+		//					L_panel.repaint();
+		//					// Always ensure re-enable just in case
+		//					chckbx_API_key.setEnabled(true);
+		//				}
+		//				//				L_panel.revalidate();
+		//				//				L_panel.repaint();
+		//			}
+		//		});
 
 		providerDropdown.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
 				if (e.getStateChange() == ItemEvent.SELECTED) {
 					String selected = (String) e.getItem();
 
-					if ("Local".equals(selected)) {
+					if ("Local".equals(selected) || "Ollama (Local)".equals(selected)) {
 						Key_panel.setVisible(false);
-						if (L_panel != null) { L_panel.revalidate(); L_panel.repaint(); } // Use 'panel' for Prompt_preview_pannel
+						modelDropdown.setVisible(false);
+						ModelName = "";
+						L_panel.revalidate(); 
+						L_panel.repaint();
 					} else {
 						Key_panel.setVisible(true);
+						modelDropdown.setVisible(true);
+						modelDropdown.removeAllItems();
+						modelDropdown.addItem("Loading models...");
+						modelDropdown.setEnabled(false);
 						providerDropdown.setEnabled(false);
 						new KeySetupWorker().execute();
 					}
 				}
-
 			}
 		});
 
@@ -767,42 +788,42 @@ In summary, the return value of `Void` signifies that the primary objective of t
 					 */
 					@Override
 					protected Void doInBackground() throws Exception {  
-		                long startTime = System.currentTimeMillis();
-		                String response = "";
-		                
-		                String selectedProvider = (String) providerDropdown.getSelectedItem();
-		                boolean using_API_key = !"Local".equals(selectedProvider);
-		                
-		                String apiKey = apiKeyManager.currentApiKey;
-		                String sys_msg = apiKeyManager.SysMSGsys;
-		                
-		                // Note: Ensure RequestSender constructor is updated to accept 'selectedProvider' as the first argument
-		                RequestSender Rs = new RequestSender(selectedProvider, using_API_key, apiKey, sys_msg, ModelName);
+						long startTime = System.currentTimeMillis();
+						String response = "";
 
-		                if (WithRAG.isSelected()) {				
-		                    response = Rs.generateResponse_With_RAG(edited_prompt, promptpropertyMap);
-		                } else if (WORAG.isSelected()) {
-		                    response = Rs.generateResponse_Without_RAG(edited_prompt, promptpropertyMap);							
-		                } else {
-		                    response = Rs.generateResponse_Without_RAG(edited_prompt, promptpropertyMap);				
-		                }
+						String selectedProvider = (String) providerDropdown.getSelectedItem();
+						boolean using_API_key = !"Local".equals(selectedProvider);
 
-		                if (response.contains("Failed with status code ") ||
-		                        response.contains("Failed to connect to the server.")) {
-		                    return null;
-		                }
+						String apiKey = apiKeyManager.currentApiKey;
+						String sys_msg = apiKeyManager.SysMSGsys;
 
-		                long endTime = System.currentTimeMillis();
-		                long elapsedTime = endTime - startTime;
-		                
-		                long hours = TimeUnit.MILLISECONDS.toHours(elapsedTime);
-		                long minutes = TimeUnit.MILLISECONDS.toMinutes(elapsedTime) % 60;
-		                long seconds = TimeUnit.MILLISECONDS.toSeconds(elapsedTime) % 60;
+						// Note: Ensure RequestSender constructor is updated to accept 'selectedProvider' as the first argument
+						RequestSender Rs = new RequestSender(selectedProvider, using_API_key, apiKey, sys_msg, ModelName);
 
-		                String timeTaken = String.format("Time taken: %02d hours %02d minutes %02d seconds", hours, minutes, seconds);
+						if (WithRAG.isSelected()) {				
+							response = Rs.generateResponse_With_RAG(edited_prompt, promptpropertyMap);
+						} else if (WORAG.isSelected()) {
+							response = Rs.generateResponse_Without_RAG(edited_prompt, promptpropertyMap);							
+						} else {
+							response = Rs.generateResponse_Without_RAG(edited_prompt, promptpropertyMap);				
+						}
 
-		                // Note: Ensure ResponseCollector references the correct property maps
-		                ResponseCollector.parseResponse(response, timeTaken, promptpropertyMap, propertyMapUpdated, selectedfunction);
+						if (response.contains("Failed with status code ") ||
+								response.contains("Failed to connect to the server.")) {
+							return null;
+						}
+
+						long endTime = System.currentTimeMillis();
+						long elapsedTime = endTime - startTime;
+
+						long hours = TimeUnit.MILLISECONDS.toHours(elapsedTime);
+						long minutes = TimeUnit.MILLISECONDS.toMinutes(elapsedTime) % 60;
+						long seconds = TimeUnit.MILLISECONDS.toSeconds(elapsedTime) % 60;
+
+						String timeTaken = String.format("Time taken: %02d hours %02d minutes %02d seconds", hours, minutes, seconds);
+
+						// Note: Ensure ResponseCollector references the correct property maps
+						ResponseCollector.parseResponse(response, timeTaken, promptpropertyMap, propertyMapUpdated, selectedfunction);
 
 						return null;
 					}
@@ -827,8 +848,8 @@ In summary, the return value of `Void` signifies that the primary objective of t
 				groupLayout.createParallelGroup(Alignment.LEADING)
 				.addGroup(groupLayout.createSequentialGroup()
 						.addContainerGap()
-						.addComponent(L_panel, GroupLayout.PREFERRED_SIZE, 711, GroupLayout.PREFERRED_SIZE)
-						.addContainerGap(38, Short.MAX_VALUE))
+						.addComponent(L_panel, GroupLayout.DEFAULT_SIZE, 738, Short.MAX_VALUE)
+						.addContainerGap())
 				);
 		L_panel.setLayout(null);
 		L_panel.add(RAG_panel);
@@ -841,7 +862,7 @@ In summary, the return value of `Void` signifies that the primary objective of t
 		ExtraInfoPannel_1.add(chckbxUpperLevelFunctions_1);
 		ExtraInfoPannel_1.add(chckbxLowerLevelFunctions_1);
 		ExtraInfoPannel_1.add(lblNewLabel_1);
-//		L_panel.add(chckbx_API_key);
+		//		L_panel.add(chckbx_API_key);
 
 		L_panel.add(providerDropdown);
 		L_panel.add(Key_panel);
@@ -855,6 +876,7 @@ In summary, the return value of `Void` signifies that the primary objective of t
 
 
 
+
 		setLayout(groupLayout);
 
 	}
@@ -862,7 +884,7 @@ In summary, the return value of `Void` signifies that the primary objective of t
 	/**
 	 * SwingWorker to handle the blocking file I/O and dialogs off the EDT.
 	 */
-	private class KeySetupWorker extends SwingWorker<Void, Void> {
+	public class KeySetupWorker extends SwingWorker<List<String>, Void> {
 		private boolean setupSuccessful = false;
 
 		/**
@@ -876,7 +898,7 @@ In summary, the return value of `Void` signifies that the primary objective of t
 		 * @summary The `KeySetupWorker` class is responsible for setting up key operations asynchronously, with the `doInBackground()` method performing background tasks and the `done()` method handling completion of these tasks.
 		 */
 		@Override
-		protected Void doInBackground() throws Exception {
+		protected List<String> doInBackground() {
 			// This runs in a background 
 			/**
 			 * @return The `doInBackground` method returns a `Void`, which signifies that it does not produce any meaningful result. The primary purpose of this method is to perform background operations essential for initializing the API key manager and validating certain paths, as indicated by its internal logic.
@@ -886,7 +908,16 @@ In summary, the return value of `Void` signifies that the primary objective of t
 			apiKeyManager.initializeAndLoadKey(SYS_MSG_FILE_NAME, selectedProvider);
 
 			setupSuccessful = (apiKeyManager.targetDirPath != null && apiKeyManager.ApiKeyFilePath != null);
-			return null;
+			List<String> models = new java.util.ArrayList<>();
+			if (setupSuccessful && apiKeyManager.currentApiKey != null && !apiKeyManager.currentApiKey.isEmpty()) {
+				if ("Helmholtz Blablador".equals(selectedProvider)) {
+					BlabladorAPIJava blabladorAPI = new BlabladorAPIJava();
+					models = blabladorAPI.getModelinBlablador(apiKeyManager.currentApiKey);
+				} else {
+					models = DLRO.getModelinDLROllama(apiKeyManager.currentApiKey);
+				}
+			}
+			return models;
 		}
 
 		/**
@@ -897,46 +928,52 @@ In summary, the return value of `Void` signifies that the primary objective of t
 		 */
 		@Override
 		protected void done() {
+			List<String> models = new java.util.ArrayList<>();
 			try {
-				get(); 
+				models = get();
 			} catch (InterruptedException | ExecutionException ex) {
 				JOptionPane.showMessageDialog(null,
-						"An error occurred during API key setup: " + ex.getMessage(),
+						"An error occurred during API key/model setup: " + ex.getMessage(),
 						"Setup Error", JOptionPane.ERROR_MESSAGE);
-				setupSuccessful = false; 
+				setupSuccessful = false;
 			} finally {
 				providerDropdown.setEnabled(true);
+				modelDropdown.removeAllItems();
 
 				if (setupSuccessful) {
 					if (apiKeyManager.currentApiKey == null || apiKeyManager.currentApiKey.isEmpty()) {
 						API_key.setEditable(true);
 						API_key.setVisible(true);
-						API_key.setText(""); 
-						View_btn_API.setSelected(true); 
+						API_key.setText("");
+						View_btn_API.setSelected(true);
 						View_btn_API.setText("Hide");
-						API_key.requestFocusInWindow(); 
+						API_key.requestFocusInWindow();
+						modelDropdown.addItem("Enter API Key first");
+						modelDropdown.setEnabled(false);
 					} else {
 						API_key.setEditable(false);
-						API_key.setVisible(false); // Can be removed if you want the field visible but masked
+						API_key.setVisible(false);
 						View_btn_API.setSelected(false);
 						View_btn_API.setText("View");
 
-						String selectedProvider = (String) providerDropdown.getSelectedItem();
-
-						if ("Helmholtz Blablador".equals(selectedProvider)) {
-							BlabladorAPIJava blabladorAPI = new BlabladorAPIJava();
-							ModelName = blabladorAPI.getModelName(apiKeyManager.currentApiKey);
+						if (models != null && !models.isEmpty()) {
+							for (String m : models) {
+								modelDropdown.addItem(m);
+							}
+							modelDropdown.setEnabled(true);
+							modelDropdown.setSelectedIndex(0);
+							ModelName = (String) modelDropdown.getSelectedItem();
 						} else {
-							// Safe to call the DLR endpoint for Ollama (DLR Server)
-							ModelName = DLRO.getModelName(apiKeyManager.currentApiKey);
+							modelDropdown.addItem("No models found");
+							modelDropdown.setEnabled(false);
+							ModelName = "";
 						}
 					}
 				} else {
-					providerDropdown.setSelectedItem("Local");
+					providerDropdown.setSelectedIndex(0); // Reset to Local
 					Key_panel.setVisible(false);
+					modelDropdown.setVisible(false);
 				}
-
-				// In Prompt_preview_pannel use: panel.revalidate(); panel.repaint();
 				if (L_panel != null) {
 					L_panel.revalidate();
 					L_panel.repaint();

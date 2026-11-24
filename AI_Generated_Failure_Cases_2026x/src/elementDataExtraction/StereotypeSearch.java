@@ -17,7 +17,7 @@ import com.nomagic.uml2.ext.magicdraw.mdprofiles.Stereotype;
 public class StereotypeSearch {
 	Project project = Application.getInstance().getProject();
     public static final List<String> REQUIREMENTS = Arrays.asList(
-            "Requirement", "Maintainability Requirement", "Safety Requirement", 
+            "Requirement","General Requirement","Cancelled Requirement", "Maintainability Requirement", "Safety Requirement", 
             "Derived Requirement", "Customer Requirement", "Operational Requirement", 
             "Functional Requirement", "Performance Requirement", "Physical Requirement", 
             "Interface Requirement", "functionalRequirement", "performanceRequirement", 

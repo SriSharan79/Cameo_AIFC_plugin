@@ -65,6 +65,7 @@ public class Prompt_preview_pannel extends JPanel {
 	private InternalDataRetreiver apiKeyManager;
 	DLROllamaAPI DLRO;
 	JComboBox<String> providerDropdown;
+	JComboBox<String> modelDropdown; // NEW: Inline model selector
 
 	BackgroundRunner BR=new BackgroundRunner();
 	// System Message
@@ -124,22 +125,21 @@ public class Prompt_preview_pannel extends JPanel {
 		View_btn_API.setBounds(0, 0, 64, 23);
 		Key_panel.add(View_btn_API);
 		View_btn_API.addActionListener(new ActionListener() {
-			/**
-			 * @param e The `e` parameter represents the event instance that triggers this method, encapsulating information about the action performed.
-			 * @summary The `actionPerformed` method toggles the visibility and editability of an API key field based on the selection state of a button.
-			 */
-			public void actionPerformed(ActionEvent e) {
-				if (View_btn_API.isSelected()) {
-					API_key.setText(apiKeyManager.currentApiKey);
-					API_key.setVisible(true);
-					API_key.setEditable(true);
-					View_btn_API.setText("Hide");
-				} else {
-					API_key.setEditable(false);
-					API_key.setVisible(false);
-					View_btn_API.setText("Show");
-				}
-			}
+		    public void actionPerformed(ActionEvent e) {
+		        if (View_btn_API.isSelected()) {
+		            API_key.setText(apiKeyManager.currentApiKey);
+		            API_key.setVisible(true);
+		            API_key.setEditable(true);
+		            View_btn_API.setText("Hide");
+		        } else {
+		            apiKeyManager.updateAndSavePassword(API_key);
+		            API_key.setEditable(false);
+		            API_key.setVisible(false);
+		            View_btn_API.setText("Show");
+		            // Reload models automatically after saving the edited key
+		            new KeySetupWorker().execute();
+		        }
+		    }
 		});
 
 		API_key.getDocument().addDocumentListener(new DocumentListener() {
@@ -180,6 +180,19 @@ public class Prompt_preview_pannel extends JPanel {
 		providerDropdown = new JComboBox<>(new String[]{"Local", "Ollama (DLR Server)", "Helmholtz Blablador"});
 		providerDropdown.setBounds(0, 379, 154, 23); // Adjust X,Y based on the panel
 		panel.add(providerDropdown);
+
+		modelDropdown = new JComboBox<>();
+		modelDropdown.setBounds(174, 379, 279, 22);
+		modelDropdown.setVisible(false); // Hidden when "Local" is selected
+		modelDropdown.addItemListener(new ItemListener() {
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				if (e.getStateChange() == ItemEvent.SELECTED) {
+					ModelName = (String) e.getItem();
+				}
+			}
+		});
+		panel.add(modelDropdown);
 
 		panel.setLayout(null);
 		panel.add(RAG_panel);
@@ -249,6 +262,7 @@ public class Prompt_preview_pannel extends JPanel {
 		add(panel);
 
 
+
 		//        chckbx_API_key.addItemListener(new ItemListener() {
 		///**
 		// * @param e The `ItemEvent` parameter `e` in the method `itemStateChanged` signifies a change event related to an item, used to determine if it was selected or deselected.
@@ -268,21 +282,28 @@ public class Prompt_preview_pannel extends JPanel {
 		//            }
 		//        });
 
+
 		providerDropdown.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
 				if (e.getStateChange() == ItemEvent.SELECTED) {
 					String selected = (String) e.getItem();
 
-					if ("Local".equals(selected)) {
+					if ("Local".equals(selected) || "Ollama (Local)".equals(selected)) {
 						Key_panel.setVisible(false);
-						if (panel != null) { panel.revalidate(); panel.repaint(); } // Use 'panel' for Prompt_preview_pannel
+						modelDropdown.setVisible(false);
+						ModelName = "";
+						panel.revalidate(); // (Use L_panel in For_Auto_AC_Functions_FCGSimplePanel)
+						panel.repaint();
 					} else {
 						Key_panel.setVisible(true);
+						modelDropdown.setVisible(true);
+						modelDropdown.removeAllItems();
+						modelDropdown.addItem("Loading models...");
+						modelDropdown.setEnabled(false);
 						providerDropdown.setEnabled(false);
 						new KeySetupWorker().execute();
 					}
 				}
-
 			}
 		});
 
@@ -308,7 +329,7 @@ public class Prompt_preview_pannel extends JPanel {
 						String response = "";
 						String ollama_key = apiKeyManager.currentApiKey;
 						String sys_msg = apiKeyManager.SysMSGsys;// FIX: Added 'selectedProvider' as the first argument
-		                RequestSender Rs = new RequestSender(selectedProvider, using_API_key, ollama_key, sys_msg, ModelName);
+						RequestSender Rs = new RequestSender(selectedProvider, using_API_key, ollama_key, sys_msg, ModelName);
 						if (WithRAG.isSelected()) {
 							response = Rs.generateResponse_With_RAG(edited_prompt, promptpropertyMap);
 						} else if (WORAG.isSelected()) {
@@ -341,7 +362,7 @@ public class Prompt_preview_pannel extends JPanel {
 
 
 
-	public class KeySetupWorker extends SwingWorker<Void, Void> {
+	public class KeySetupWorker extends SwingWorker<List<String>, Void> {
 		private boolean setupSuccessful = false;
 
 		/**
@@ -355,7 +376,7 @@ public class Prompt_preview_pannel extends JPanel {
 		 * @summary The `KeySetupWorker` is primarily responsible for executing background processing tasks related to key setup within the OSIRIS plugin, with `doInBackground()` performing the core operations and `done()` handling post-processing activities.
 		 */
 		@Override
-		protected Void doInBackground() {
+		protected List<String> doInBackground() {
 			String selectedProvider = (String) providerDropdown.getSelectedItem(); // Fetch the dropdown value
 			apiKeyManager.initializeAndLoadKey(SYSMSGFILENAME, selectedProvider);
 			/**
@@ -363,51 +384,71 @@ public class Prompt_preview_pannel extends JPanel {
 			 * @summary The `doInBackground` method initializes the API key using the provided file name and sets up a flag indicating whether the initialization was successful.
 			 */
 			setupSuccessful = (apiKeyManager.targetDirPath != null && apiKeyManager.ApiKeyFilePath != null);
-			return null;
+			List<String> models = new java.util.ArrayList<>();
+			if (setupSuccessful && apiKeyManager.currentApiKey != null && !apiKeyManager.currentApiKey.isEmpty()) {
+				if ("Helmholtz Blablador".equals(selectedProvider)) {
+					BlabladorAPIJava blabladorAPI = new BlabladorAPIJava();
+					models = blabladorAPI.getModelinBlablador(apiKeyManager.currentApiKey);
+				} else {
+					models = DLRO.getModelinDLROllama(apiKeyManager.currentApiKey);
+				}
+			}
+			return models;
 		}
 
 		/**
 		 * @summary The `done` method in the OSIRIS Java plugin is responsible for handling the completion of an asynchronous task related to API key setup, managing UI updates based on whether the setup was successful or encountered an error.
 		 */
 		@Override
+
 		protected void done() {
+			List<String> models = new java.util.ArrayList<>();
 			try {
-				get(); 
+				models = get();
 			} catch (InterruptedException | ExecutionException ex) {
 				JOptionPane.showMessageDialog(null,
-						"An error occurred during API key setup: " + ex.getMessage(),
+						"An error occurred during API key/model setup: " + ex.getMessage(),
 						"Setup Error", JOptionPane.ERROR_MESSAGE);
-				setupSuccessful = false; 
+				setupSuccessful = false;
 			} finally {
 				providerDropdown.setEnabled(true);
+				modelDropdown.removeAllItems();
+
 				if (setupSuccessful) {
 					if (apiKeyManager.currentApiKey == null || apiKeyManager.currentApiKey.isEmpty()) {
 						API_key.setEditable(true);
 						API_key.setVisible(true);
-						API_key.setText(""); 
-						View_btn_API.setSelected(true); 
+						API_key.setText("");
+						View_btn_API.setSelected(true);
 						View_btn_API.setText("Hide");
-						API_key.requestFocusInWindow(); 
+						API_key.requestFocusInWindow();
+						modelDropdown.addItem("Enter API Key first");
+						modelDropdown.setEnabled(false);
 					} else {
 						API_key.setEditable(false);
-						API_key.setVisible(false); // Can be removed if you want the field visible but masked
+						API_key.setVisible(false);
 						View_btn_API.setSelected(false);
 						View_btn_API.setText("View");
 
-						String selectedProvider = (String) providerDropdown.getSelectedItem();
-
-						if ("Helmholtz Blablador".equals(selectedProvider)) {
-							BlabladorAPIJava blabladorAPI = new BlabladorAPIJava();
-							ModelName = blabladorAPI.getModelName(apiKeyManager.currentApiKey);
+						if (models != null && !models.isEmpty()) {
+							for (String m : models) {
+								modelDropdown.addItem(m);
+							}
+							modelDropdown.setEnabled(true);
+							modelDropdown.setSelectedIndex(0);
+							ModelName = (String) modelDropdown.getSelectedItem();
 						} else {
-							// Safe to call the DLR endpoint for Ollama (DLR Server)
-							ModelName = DLRO.getModelName(apiKeyManager.currentApiKey);
+							modelDropdown.addItem("No models found");
+							modelDropdown.setEnabled(false);
+							ModelName = "";
 						}
 					}
 				} else {
-					providerDropdown.setSelectedItem("Ollama (Local)");
+					providerDropdown.setSelectedIndex(0); // Reset to Local
 					Key_panel.setVisible(false);
+					modelDropdown.setVisible(false);
 				}
+				// Use L_panel in For_Auto_AC_Functions_FCGSimplePanel
 				panel.revalidate();
 				panel.repaint();
 			}

@@ -58,7 +58,11 @@ public class PromptPreviewDialog extends JDialog {
 	    this.pack();
 
 	    // Position the dialog relative to the parent frame
-	    this.setLocationRelativeTo(parent);
+	    if (parent instanceof OSIRISFrame) {
+	        ((OSIRISFrame) parent).centerDialog(this);
+	    } else {
+	        this.setLocationRelativeTo(parent);
+	    }
 
 	    // Set default close operation to hide the dialog on close
 	    this.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);

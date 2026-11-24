@@ -75,7 +75,8 @@ public class BlabladorAPIJava {
         }
     }
 
-    public List<String> getModelinBlablador(String keyParam) {
+
+	public List<String> getModelinBlablador(String keyParam) {
         List<String> idList = new ArrayList<>();
         String actualKey = resolveApiKey(keyParam);
         
@@ -118,7 +119,8 @@ public class BlabladorAPIJava {
         return Collections.unmodifiableList(idList);
     }
 
-    public String generateCompletion(String systemPrompt, String userPrompt) throws Exception {
+
+	public String generateCompletion(String systemPrompt, String userPrompt) throws Exception {
         URL url = new URL(BLABLADOR_BASE_URL + "/chat/completions");
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 

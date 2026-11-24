@@ -33,6 +33,8 @@ action is an instance of NMAction that defines the specific behavior or operatio
 		// TODO Auto-generated constructor stub
 	}
 
+
+
 /**
  * @param actionsManager The `actionsManager` parameter is an instance of the `ActionsManager` class used to register a new category of actions within the system.
  * @param tree The parameter `tree` is a data structure representing the hierarchical organization of elements in the SysML model used by OSIRIS for context-specific safety assessment.
